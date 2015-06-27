@@ -6,6 +6,8 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var del = require('del');
 
+var browserSync = require('browser-sync').create(); 
+
 var paths = {
 	dist    : './dist',
 	scripts : [
@@ -63,7 +65,8 @@ gulp.task('scripts', ['clean:scripts'], function () {
 gulp.task('styles', ['clean:styles'], function () {
 	return gulp.src(paths.styles)
 		.pipe(less())
-		.pipe(gulp.dest(paths.dist + '/css'));
+		.pipe(gulp.dest(paths.dist + '/css'))
+        .pipe(browserSync.stream());
 });
 
 /*
@@ -94,17 +97,25 @@ gulp.task('build', [
 ]);
 
 /*
- * Watches any change in source code and updates 
- * the dist directory in real time
+ * Synchronizes the browser with the 'dist' directory
  */
-gulp.task('watch', function () {
-    gulp.watch(paths.scripts, ['lint', 'scripts']);
+gulp.task('serve', ['build'], function () {
+    browserSync.init({
+        notify: false,
+        port: 9000,
+        server: {
+            baseDir: ['dist']
+        }
+    });
+    
+    gulp.watch(paths.scripts, ['lint', 'scripts']).on("change", browserSync.reload);
     gulp.watch(paths.styles, ['styles']);
-    gulp.watch(paths.html, ['html']);
-    gulp.watch(paths.images, ['images']);
+    gulp.watch(paths.html, ['html']).on("change", browserSync.reload);
+    gulp.watch(paths.images, ['images']).on("change", browserSync.reload);
+
 });
 
 /*
  * Default task, builds everything and watches for changes
  */
-gulp.task('default', ['build', 'watch']);
+gulp.task('default', ['serve']);

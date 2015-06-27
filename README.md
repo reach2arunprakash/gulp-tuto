@@ -432,3 +432,40 @@ Maintenant essayons de modifier le fichier `client/index.html` en changeant le t
 	
 Un simple rafraichissement de la page dans le navigateur (`F5` ou `CTRL+R`) devrait permettre de voir apparaître les changements.
 Sympa non ?
+
+Step 5 : Synchronisation avec le navigateur
+---
+
+NodeJS dispose d'un très bon module pour la synchronisation automatique client/serveur. Etant donné que Gulp est basé sur Node, il peut bénéficier des mêmes fonctionnalités.
+Le but avoué étant de ne même plus avoir à appuyer sur `F5`pour rafraichir la page.
+
+Le module en question est [BrowserSync](http://www.browsersync.io/). Il ne s'agit pas d'un plugin Gulp à part entière, mais il s'intègre très bien en tant que tel. 
+
+Installation
+	
+	npm install --save-dev browser-sync
+	
+Importez le dans le Gulpfile
+
+	var browserSync = require('browser-sync').create();
+	
+Créez une tâche 'serve' à la place de 'watch'
+
+	/*
+	 * Synchronizes the browser with the 'dist' directory
+	 */
+	gulp.task('serve', ['build'], function () {
+	    browserSync.init({
+	        notify: false,
+	        port: 9000,
+	        server: {
+	            baseDir: ['dist']
+	        }
+	    });
+    
+	    gulp.watch(paths.scripts, ['lint', 'scripts']).on("change", browserSync.reload);
+	    gulp.watch(paths.styles, ['styles']).on("change", browserSync.reload);
+	    gulp.watch(paths.html, ['html']).on("change", browserSync.reload);
+	    gulp.watch(paths.images, ['images']).on("change", browserSync.reload);
+	});
+	
