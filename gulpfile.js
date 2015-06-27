@@ -1,12 +1,16 @@
 var gulp = require('gulp');
 
-gulp.task('hello', function () {
-  console.log("Hello, ");
+gulp.task('scripts', function () {
+	gulp.src('./client/app/**/*.js').pipe(gulp.dest('./dist'));
 });
 
-gulp.task('world', function () {
-  console.log("world!");
+gulp.task('styles', function () {
+	gulp.src('./client/assets/**/*.css').pipe(gulp.dest('./dist'));
 });
 
-gulp.task('default', ['world', 'hello']);
+gulp.task('html', function () {
+	gulp.src('./client/**/*.html').pipe(gulp.dest('./dist'));
+});
+
+gulp.task('default', ['html', 'scripts', 'styles']);
 
