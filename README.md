@@ -59,4 +59,60 @@ L'ordre dans lequel les tâches sont chaînées compte, par exemple si on rempla
 Les instructions de base
 ---
 
-Gulp propose quelques instructions de base pour la manipulation des fichiers et des dossiers. 
+Gulp propose quelques instructions de base pour la manipulation des fichiers et des dossiers.
+
+* `gulp.src` : sélectionne un ensemble de fichiers sources
+* `pipe` : opérateur qui permet de chainer les opérations
+* `gulp.dest` : copie le résultat de la chaine de traitement vers un répertoire de destination.
+
+Modifions à présent la structure du répertoire de manière à avoir le squelette d'une application qui ressemblerait à cela : 
+
+	├── client
+	│   ├── app
+	│   │   └── main.js
+	│   ├── assets
+	│   │   └── style.css
+	│   └── index.html
+	├── gulpfile.js
+	├── node_modules
+	└── package.json
+	
+A présent, pour illustrer le fonctionnement des instructions de base de Gulp, nous allons éditer le `gulpfile` de la manière suivante :
+
+	var gulp = require('gulp');
+
+	// Scripts
+	gulp.task('scripts', function () {
+		gulp.src('./client/app/**/*.js')
+		.pipe(gulp.dest('./dist'));
+	});
+
+	// Stylesheets
+	gulp.task('styles', function () {
+		gulp.src('./client/assets/**/*.css')
+		.pipe(gulp.dest('./dist'));
+	});
+	
+	// HTML
+	gulp.task('html', function () {
+		gulp.src('./client/**/*.html')
+		.pipe(gulp.dest('./dist'));
+	});
+	
+	// Default
+	gulp.task('default', ['html', 'scripts', 'styles']);
+
+Nous avons donc défini trois tâches de base qui vont respectivement sélectionner les fichiers de l'application par leur extension et les copier dans le répertoire "dist". La commande par défaut va exécuter toutes ces tâches les unes après les autres.
+
+	$ gulp
+	[15:37:18] Using gulpfile ~/Dev/tutorials/gulp/gulp-tuto/gulpfile.js
+	[15:37:18] Starting 'html'...
+	[15:37:18] Finished 'html' after 5.94 ms
+	[15:37:18] Starting 'scripts'...
+	[15:37:18] Finished 'scripts' after 1.68 ms
+	[15:37:18] Starting 'styles'...
+	[15:37:18] Finished 'styles' after 749 μs
+	[15:37:18] Starting 'default'...
+	[15:37:18] Finished 'default' after 2.49 μs
+	
+Bien que cela puisse déjà s'avérer utile, ce n'est qu'un début. Gulp peut faire bien plus que ça.
