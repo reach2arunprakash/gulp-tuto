@@ -348,3 +348,44 @@ Une fois les modifications faites, nous pouvons vérifier que le script fonction
 
 	$ gulp
 	$ open ./dist/index.html
+
+
+Step 4 : Les watchers
+---
+
+Le `gulpfile` que nous avons réalisé permet de créer une version statique du client, mais il peut être fastidieux de devoir re-générer le répertoire 'dist' à chaque changement. Idéalement, il faudrait que le build se fasse à la volée. C'est précisément le rôle des `watchers`.
+
+Les `watchers` vont détecter les moindres changements sur un ensemble de fichiers et vont déclencher, le cas échéant, les tâches qui leur sont associées.
+
+Reprenons notre `gulpfile` et ajoutons lui donc une tâche `watch` :
+
+	/*
+	 * Watches any change in source code and updates 
+	 * the dist directory in real time
+	 */
+	gulp.task('watch', function () {
+	    gulp.watch(paths.scripts, ['lint', 'scripts']);
+	    gulp.watch(paths.styles, ['styles']);
+	    gulp.watch(paths.html, ['html']);
+	    gulp.watch(paths.images, ['images']);
+	});
+
+Il faut ensuite mettre à jour la tâche par défaut :
+
+	/*
+	 * Default task, build everything and watches for changes
+	 */
+	gulp.task('default', ['build', 'watch']);
+
+L'exécution de la tâche va donner lieu à un processus de type 'loop' qu'il sera possible d'arrêter à tout moment avec le raccourci `CTRL+C`.
+
+	$ gulp build
+	$ open ./dist/index.html
+	$ gulp watch
+	
+Maintenant essayons de modifier le fichier `client/index.html` en changeant le texte de la balise `h1`par exemple :
+
+		<h1>Gulp is watching you!</h1>
+		
+Un simple rafraichissement de la page dans le navigateur (`F5` ou `CTRL+R`) devrait permettre de voir apparaître les changements.
+Sympa non ?
