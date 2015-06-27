@@ -8,14 +8,13 @@ var del = require('del');
 
 var browserSync = require('browser-sync').create(); 
 
+// Browserify
+var browserify = require('browserify');
+var source = require('vinyl-source-stream'); 
+
 var paths = {
 	dist    : './dist',
-	scripts : [
-        './client/app/models/models.js',
-        './client/app/collections/collections.js',
-        './client/app/views/views.js',
-        './client/app/app.js'
-              ],
+	scripts : './client/app/**/*.js',
 	styles  : './client/assets/styles/**/*.less',
 	html    : './client/**/*.html',
 	images  : ['./client/assets/favicon.ico', './client/assets/images/**/*.*']
@@ -24,10 +23,6 @@ var paths = {
 /*
  * Cleans the dist directory
  */
-gulp.task('clean:scripts', function (cb) {
-  del(paths.dist + '/js', cb);
-});
-
 gulp.task('clean:styles', function (cb) {
   del(paths.dist + '/css', cb);
 });
@@ -50,13 +45,13 @@ gulp.task('lint', function () {
 });
 
 /*
- * Concatenate & uglify scripts into a single file
+ * Compiles CJS modules into an all-in-one bundle
  */
-gulp.task('scripts', ['clean:scripts'], function () {
-	return gulp.src(paths.scripts)
-		.pipe(uglify())
-		.pipe(concat('scripts.min.js'))
-		.pipe(gulp.dest(paths.dist + '/js'));
+gulp.task('browserify', function() {
+    return browserify('./client/app/app.js')
+        .bundle()
+        .pipe(source('bundle.js'))
+        .pipe(gulp.dest('./dist'));
 });
 
 /*
@@ -90,9 +85,9 @@ gulp.task('images', ['clean:images'], function () {
  */
 gulp.task('build', [
 	'lint',
+    'browserify',
 	'html', 
-	'images', 
-	'scripts', 
+	'images',
 	'styles'
 ]);
 
@@ -108,7 +103,7 @@ gulp.task('serve', ['build'], function () {
         }
     });
     
-    gulp.watch(paths.scripts, ['lint', 'scripts']).on("change", browserSync.reload);
+    gulp.watch(paths.scripts, ['lint', 'browserify']).on("change", browserSync.reload);
     gulp.watch(paths.styles, ['styles']);
     gulp.watch(paths.html, ['html']).on("change", browserSync.reload);
     gulp.watch(paths.images, ['images']).on("change", browserSync.reload);

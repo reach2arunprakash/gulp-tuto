@@ -468,4 +468,96 @@ Créez une tâche 'serve' à la place de 'watch'
 	    gulp.watch(paths.html, ['html']).on("change", browserSync.reload);
 	    gulp.watch(paths.images, ['images']).on("change", browserSync.reload);
 	});
+
+
+Step 6 : Intégration avec Browserify
+---
+
+Le développement Javascript a grandement évolué depuis l'arrivé de NodeJS. Certaines des techniques de programmation spécifiques à Node se sont démocratisées et sont devenues des quasi-standards.
+
+L'une des technologies emblématique de Node sont les [modules CommonJS](http://wiki.commonjs.org/wiki/Modules/1.1) qui, couplés à NPM, permettent de modulariser très simplement le développement d'une application.
+
+[Browserify](http://browserify.org/) s'appuie sur NPM pour transformer n'importe quelle application développées avec les modules CommonJS en un script unique qui rassemble tout au moment de passer en production. L'avantage est de ne plus avoir à gérer l'ordre dans lequel les scripts doivent être insérés car le système de résolution des dépendances de NPM garantit que les modules seront chargés dans l'ordre.
+
+Le couplage de Gulp avec Browserify est très puissant car il permet de développer une application complexe et modulaire et de simplement dire à Browserify de rassembler le tout dans un seul script (`bundle.js`) qui sera au final intégré dans le fichier index.html.
+
+La gros avantage par rapport au plugin de concaténation est qu'il n'est pas nécessaire de passer un tableau avec tous les scripts dans l'ordre. De plus, toutes les librairies qui sont utilisables avec NPM (notamment Jquery, Backbone) sont intégrées dans le bundle.
+
+Commençons par installer Browserify et ses dépendances : 
+	
+	npm install --save-dev browserify vinyl-source-stream
+
+Il faut ensuite mettre à jour le `Gulpfile`:
+
+	// Browserify
+	var browserify = require('browserify');
+	var source = require('vinyl-source-stream'); 
+
+Et ajouter une tâche correspondante :
+
+	gulp.task('browserify', function() {
+    	return browserify('./client/app/app.js').bundle()
+    	    .pipe(source('bundle.js'))
+    	    .pipe(gulp.dest('./dist'));
+	});
+
+Cette tâche va prendre le script "racine" de l'application et résoudre toutes ses dépendances, les ajouter dans un fichier `bundle.js`et le placer dans le répertoire "dist". Quelle différence avec la tâche "scripts" des étapes précédentes ? Un petit exemple devrait éclairer tout ça.
+
+Commençons par installer la librairie Jquery : 
+
+	npm install --save jquery
+	
+Vous remarquerez que cette fois çi, la librairie n'est pas installée en tant que dépendance de développement grâce à l'option `--save`au lieu de `--save-dev`.
+
+Editez le fichier `./client/app/app.js` :
+
+	var $ = require('jquery'); 
+	$('img').fadeOut(); // makes images disappear
+	console.log("Application has started...");
+	
+Ce script très simple importe la librairie Jquery pour ensuite créer un effet de fade out sur toutes les images de la page.
+
+Reste à mettre à jour le fichier `index.html`pour lui dire d'importer le bon script : 
+
+	<!DOCTYPE html>
+	<html>
+	<head lang="en">
+	    <meta charset="UTF-8">
+	    <title>My App</title>
+	    <link rel="shortcut icon" href="img/favicon.ico">
+	    <link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body>
+		<h1>Gulp is serving you!</h1>
+	    <p><img src="img/shlurp.png"/></p>
+	<script src="bundle.js"></script>
+	</body>
+	</html>
+	
+Exécuter 
+
+	gulp browerify
+	gulp serve
+	
+Et votre image devrait disparaitre toute seule.
+A partir de maintenant, la tâche `browserify`peut remplacer la tâche `scripts`des étapes précédentes. 
+
+	gulp.task('build', [
+		'lint',
+	    'browserify',
+		'html', 
+		'images',
+		'styles'
+	]);
+
+	gulp.task('serve', ['build'], function () {
+	    browserSync.init({
+	    [...]
+    	});
+    
+	    gulp.watch(paths.scripts, ['lint', 'browserify']).on("change", browserSync.reload);
+		[...]	    
+	});
+
+
 	
