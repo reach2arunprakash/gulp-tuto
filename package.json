@@ -1,0 +1,21 @@
+{
+  "name": "gulp-tuto",
+  "version": "1.0.0",
+  "description": "Gulp Tutorial",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mnemotix/jdev2015/"
+  },
+  "keywords": [
+    "Gulp"
+  ],
+  "author": "Nicolas Delaforge <nicolas.delaforge@mnemotix.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "gulp": "^3.9.0"
+  }
+}
