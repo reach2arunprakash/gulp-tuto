@@ -47,13 +47,9 @@ gulp.task('lint', function () {
  */
 gulp.task('scripts', ['clean:scripts'], function () {
 	return gulp.src(paths.scripts)
-		.pipe(gulp.dest(paths.dist + '/js'));
-/*
-	return gulp.src(paths.scripts)
 		.pipe(uglify())
 		.pipe(concat('scripts.min.js'))
 		.pipe(gulp.dest(paths.dist + '/js'));
-*/
 });
 
 /*
@@ -92,19 +88,7 @@ gulp.task('build', [
 	'styles'
 ]);
 
-
 /*
- * Watches any change in source code and updates 
- * the dist directory in real time
+ * Default task, builds everything
  */
-gulp.task('watch', function () {
-gulp.watch(paths.scripts, ['scripts']);
-gulp.watch(paths.styles, ['styles']);
-gulp.watch(paths.html, ['html']);
-gulp.watch(paths.images, ['images']);
-});
-
-/*
- * Default task, build everything and watches for changes
- */
-gulp.task('default', ['build', 'watch']);
+gulp.task('default', ['build']);
