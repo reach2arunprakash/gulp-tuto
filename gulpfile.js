@@ -8,7 +8,12 @@ var del = require('del');
 
 var paths = {
 	dist    : './dist',
-	scripts : './client/app/**/*.js',
+	scripts : [
+        './client/app/models/models.js',
+        './client/app/collections/collections.js',
+        './client/app/views/views.js',
+        './client/app/app.js',
+              ],
 	styles  : './client/assets/styles/**/*.less',
 	html    : './client/**/*.html',
 	images  : ['./client/assets/favicon.ico', './client/assets/images/**/*.*']
