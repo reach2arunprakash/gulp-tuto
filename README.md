@@ -1,4 +1,4 @@
-Gulp
+Apprendre Gulp
 ===
 
 Gulp est un système de build comparable à Grunt qui se base sur le système de "stream" de NodeJS pour effectuer des tâches plus ou moins complexes.
