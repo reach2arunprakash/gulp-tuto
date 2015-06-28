@@ -2,13 +2,13 @@
   "name": "gulp-tuto",
   "version": "1.0.0",
   "description": "Gulp Tutorial",
-  "main": "index.js",
+  "main": "index.html",
   "scripts": {
     "test": "gulp test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Mnemotix/jdev2015/"
+    "url": "https://github.com/Mnemotix/gulp-tuto/"
   },
   "keywords": [
     "Gulp"
