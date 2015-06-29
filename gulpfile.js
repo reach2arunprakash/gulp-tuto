@@ -1,16 +1,18 @@
 var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var less = require('gulp-less');
-var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
 var del = require('del');
+var gutil = require('gulp-util');
 
 var browserSync = require('browser-sync').create(); 
 
-// Browserify
+// Browserify + Watchify
 var browserify = require('browserify');
-var source = require('vinyl-source-stream'); 
+var watchify = require('watchify');
+var buffer = require('vinyl-buffer');
+var source = require('vinyl-source-stream');
+var sourcemaps = require('gulp-sourcemaps');
+var assign = require('lodash.assign');
 
 var paths = {
 	dist    : './dist',
@@ -47,12 +49,44 @@ gulp.task('lint', function () {
 /*
  * Compiles CJS modules into an all-in-one bundle
  */
-gulp.task('browserify', function() {
-    return browserify('./client/app/app.js')
-        .bundle()
+
+// Options browserify
+var customOpts = {
+    entries: ['./client/app/app.js'],
+    debug: true
+};
+
+// Utilisation du module lowdash.assign pour fusionner
+// les options browserify et watchify dans un même objet
+var opts = assign({}, watchify.args, customOpts);
+
+// Initialisation de Watchify
+var bundler = watchify(browserify(opts));
+
+// Il est possible d'ajouter des transformations ici, par exemple :
+// bundler.transform(coffeeify);
+
+bundler.on('update', bundle); // listener sur l'évènement 'update' pour mettre à jour pour le bundle
+bundler.on('log', gutil.log); // log les sorties du bundler sur le terminal
+gulp.task('scripts', bundle); // ajout de la tâche `gulp scripts` pour assembler le bundle
+
+function bundle() {
+    return bundler.bundle()
+        // log les errors quand elles surviennent
+        .on('error', gutil.log.bind(gutil, 'Browserify Error'))
         .pipe(source('bundle.js'))
-        .pipe(gulp.dest('./dist'));
-});
+        // optionnel, permet de bufferiser le contenu des fichiers pour améliorer les performances du build
+        .pipe(buffer())
+        // optionnel, permet d'ajouter les sourcemaps pour le debug
+        .pipe(sourcemaps.init({loadMaps: true}))
+        // Ecrit les fichiers .map
+        .pipe(sourcemaps.write('./'))
+        // Copie le tout dans le répertoire final
+        .pipe(gulp.dest(paths.dist))
+        // stream le résultat à BrowserSync pour qu'il recharge automatiquement la page
+        .pipe(browserSync.stream());
+}
+
 
 /*
  * Compiles less files into css
@@ -69,7 +103,8 @@ gulp.task('styles', ['clean:styles'], function () {
  */
 gulp.task('html', ['clean:html'], function () {
 	return gulp.src(paths.html)
-		.pipe(gulp.dest(paths.dist));
+		.pipe(gulp.dest(paths.dist))
+        .pipe(browserSync.stream());
 });
 
 /*
@@ -77,7 +112,8 @@ gulp.task('html', ['clean:html'], function () {
  */
 gulp.task('images', ['clean:images'], function () {
 	return gulp.src(paths.images)
-		.pipe(gulp.dest(paths.dist + '/img'));
+		.pipe(gulp.dest(paths.dist + '/img'))
+        .pipe(browserSync.stream());
 });
 
 /*
@@ -85,7 +121,7 @@ gulp.task('images', ['clean:images'], function () {
  */
 gulp.task('build', [
 	'lint',
-    'browserify',
+    'scripts',
 	'html', 
 	'images',
 	'styles'
@@ -103,10 +139,10 @@ gulp.task('serve', ['build'], function () {
         }
     });
     
-    gulp.watch(paths.scripts, ['lint', 'browserify']).on("change", browserSync.reload);
+    gulp.watch(paths.scripts, ['lint', 'scripts']);
     gulp.watch(paths.styles, ['styles']);
-    gulp.watch(paths.html, ['html']).on("change", browserSync.reload);
-    gulp.watch(paths.images, ['images']).on("change", browserSync.reload);
+    gulp.watch(paths.html, ['html']);
+    gulp.watch(paths.images, ['images']);
 
 });
 

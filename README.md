@@ -643,4 +643,126 @@ gulp.task('serve', ['build'], function () {
 });
 ```
 
-	
+
+Step 7 : Optimisation du build avec Watchify
+---
+
+
+Au fur et à mesure qu'un projet Browserify évolue, la construction du bundle devient de plus en plus longue et peut prendre jusqu'à 30 secondes et plus. Un tel délai de compilation va devenir très vite très pénible pour le développeur.
+
+C'est pourquoi [substack](http://github.com/substack) a écrit [Watchify](http://github.com/substack/watchify), un compilateur Browserify persistant qui ajoute un watcher sur les fichiers et ne reconstruit __*que le strict nécéssaire*__. De cette manière un build qui pourrait prendre plusieurs dizaines de secondes, ne prend que quelques millisecondes, ce qui représente un énorme gain de productivité.
+
+Watchify, comme Browserify, ne propose pas de plugin Gulp et il n'en a pas besoin. Nous pouvons utiliser [vinyl-source-stream](http://github.com/hughsk/vinyl-source-stream) pour intégrer le stream Watchify dans la pipeline Gulp.
+
+Commençons par installer les dépendances nécessaires :
+
+```sh
+npm install --save-dev gulp-util vinyl-buffer watchify gulp-sourcemaps lodash.assign
+```
+
+Ensuite dans le Gulpfile, il faut compléter les imports : 
+
+```js
+// gulfile.js
+
+var gulp = require('gulp');
+var jshint = require('gulp-jshint');
+var less = require('gulp-less');
+var del = require('del');
+var gutil = require('gulp-util');				// new
+
+var browserSync = require('browser-sync').create(); 
+
+// Browserify + Watchify
+var browserify = require('browserify');
+var watchify = require('watchify'); 			// new
+var buffer = require('vinyl-buffer');			// new
+var source = require('vinyl-source-stream');
+var sourcemaps = require('gulp-sourcemaps');	// new
+var assign = require('lodash.assign');			// new
+
+```
+
+On peut supprimer la tâche `browserify` précédente et la remplacer par le bloc suivant :
+
+```js
+// Options browserify
+var customOpts = {
+    entries: ['./client/app/app.js'],
+    debug: true
+};
+
+// Utilisation du module lowdash.assign pour fusionner
+// les options browserify et watchify dans un même objet
+var opts = assign({}, watchify.args, customOpts);
+
+// Initialisation de Watchify
+var bundler = watchify(browserify(opts));
+
+// Il est possible d'ajouter des transformations ici, par exemple :
+// bundler.transform(coffeeify);
+
+bundler.on('update', bundle); // listener sur l'évènement 'update' pour mettre à jour pour le bundle
+bundler.on('log', gutil.log); // log les sorties du bundler sur le terminal
+gulp.task('scripts', bundle); // ajout de la tâche `gulp scripts` pour assembler le bundle
+
+function bundle() {
+    return bundler.bundle()
+        // log les errors quand elles surviennent
+        .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+        .pipe(source('bundle.js'))
+        // optionnel, permet de bufferiser le contenu des fichiers pour améliorer les performances du build
+        .pipe(buffer())
+        // optionnel, permet d'ajouter les sourcemaps pour le debug
+        .pipe(sourcemaps.init({loadMaps: true}))
+        // Ecrit les fichiers .map
+        .pipe(sourcemaps.write('./'))
+        // Copie le tout dans le répertoire final
+        .pipe(gulp.dest(paths.dist))
+        // stream le résultat à BrowserSync pour qu'il recharge automatiquement la page
+        .pipe(browserSync.stream());
+}
+
+```
+Ensuite, on met à jour les tâches `build` et `serve` : 
+
+```js
+/*
+ * Macro task to re-build the whole dist directory
+ */
+gulp.task('build', [
+	'lint',
+    'scripts',
+	'html', 
+	'images',
+	'styles'
+]);
+
+/*
+ * Synchronizes the browser with the 'dist' directory
+ */
+gulp.task('serve', ['build'], function () {
+    browserSync.init({
+        notify: false,
+        port: 9000,
+        server: {
+            baseDir: ['dist']
+        }
+    });
+    gulp.watch(paths.scripts, ['lint', 'scripts']);
+    gulp.watch(paths.styles, ['styles']);
+    gulp.watch(paths.html, ['html']).on("change", browserSync.reload);
+    gulp.watch(paths.images, ['images']).on("change", browserSync.reload);
+});
+
+```
+
+Conclusion
+---
+
+Avec ce tutoriel, nous avons pu effleurer l'ensemble des possibilités offertes par Gulp.
+Le projet final de ce tutoriel nous donne des bases solides pour la construction d'applications fullstack JS et nous servira de point de départ dans les prochains chapitres de notre formation.
+
+Vous pouvez retrouver le code source complet du projet, dans son état final, [à cette adresse](https://github.com/Mnemotix/gulp-tuto) ou bien en utilisant la ligne de commande GIT : 
+
+	git clone https://github.com/Mnemotix/gulp-tuto.git myproject
