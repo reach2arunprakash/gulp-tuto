@@ -3,6 +3,11 @@ Apprendre Gulp
 
 Gulp est un système de build comparable à Grunt qui se base sur le système de "stream" de NodeJS pour effectuer des tâches plus ou moins complexes.
 
+
+Tout au long du tutoriel, pour chaque étape, nous allons créer des versions du code sur le dépôt Github du projet, de manière à ce vous puissiez vous référer au code tel qu'il devrait être et suivre ses évolutions. En cas de problèmes vous pourrez toujours revenir en arrière juste en reprenant le code de l'étape précédente.
+
+Les tags sur le dépôt Github sont accessibles à cette adresse : <https://github.com/Mnemotix/gulp-tuto/tags>
+
 [Sommaire :](id:toc)
 ---
 * [Step 0 : Installation](#step-0--installation)
@@ -80,6 +85,8 @@ gulp
 ```
 	
 L'ordre dans lequel les tâches sont chaînées compte, par exemple si on remplace le code de la tâche par défaut avec `gulp.task('default', ['world', 'hello']);`, nous verrons que la tâche `world` est appellée avant la tâche `hello`.
+
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step1)
 
 Step 2 : Les instructions de base
 ---
@@ -242,6 +249,7 @@ $ open ./dist/index.html
 Bien que cela puisse déjà s'avérer utile, ce n'est qu'un début.   
 Comme nous allons le voir, Gulp peut faire bien plus que ça.
 
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step2)
 
 Step 3 : Les plugins
 ---
@@ -461,6 +469,8 @@ var paths = {
 Avec ce tableau, la concaténation va s'opérer dans le bon ordre :
 ![screenshot2](http://puu.sh/iEYQF/96fa7a81b7.png =500x)
 
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step3)
+
 Step 4 : Les watchers
 ---
 
@@ -509,6 +519,8 @@ Maintenant essayons de modifier le fichier `client/index.html` en changeant le t
 Un simple rafraichissement de la page dans le navigateur (`F5` ou `CTRL+R`) devrait permettre de voir apparaître les changements.
 Sympa non ?
 
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step4)
+
 Step 5 : Synchronisation avec le navigateur
 ---
 
@@ -550,6 +562,7 @@ gulp.task('serve', ['build'], function () {
     gulp.watch(paths.images, ['images']).on("change", browserSync.reload);
 });
 ```
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step5)
 
 Step 6 : Intégration avec Browserify
 ---
@@ -655,6 +668,8 @@ gulp.task('serve', ['build'], function () {
     [...]
 });
 ```
+
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step6)
 
 Step 7 : Optimisation du build avec Watchify
 ---
@@ -768,6 +783,9 @@ gulp.task('serve', ['build'], function () {
 });
 
 ```
+
+[Code source complet de cette étape](https://github.com/Mnemotix/gulp-tuto/tree/Step7)
+
 
 Conclusion
 ---
