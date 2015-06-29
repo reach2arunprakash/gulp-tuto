@@ -3,7 +3,21 @@ Apprendre Gulp
 
 Gulp est un système de build comparable à Grunt qui se base sur le système de "stream" de NodeJS pour effectuer des tâches plus ou moins complexes.
 
-Step 0 : Installation
+[Sommaire :](id:toc)
+---
+* [Step 0 : Installation](#Step0)
+* [Step 1 : Les tâches](#Step1)
+* [Step 2 : Les instructions de base](#Step2)
+* [Step 3 : Les plugins](#Step3)
+* [Step 4 : Les watchers](#Step4)
+* [Step 5 : Synchronisation avec le navigateur](#Step5)
+* [Step 6 : Intégration avec Browserify](#Step6)
+* [Step 7 : Optimisation du build avec Watchify](#Step7)
+* [Conclusion](#conclusion)
+
+---
+
+[Step 0 : Installation](id:Step0)
 ---
 La première étape consiste à installer gulp en tant que module global npm et à l'enregristrer parmi les dépendances de développement de votre projet:
 
@@ -21,7 +35,7 @@ A partir de là Gulp est installé et prêt à exécuter toutes les tâches de b
 touch gulpfile.js
 ```
 
-Step 1 : Les tâches
+[Step 1 : Les tâches](id:Step1)
 ---
 Le `gulpfile` est un fichier javascript qui va contenir toutes les tâches que gulp va pouvoir effectuer pour vous. La première tâche à configurer est la tâche par défaut. Ajoutez la commande suivante dans votre gulpfile : 
 
@@ -67,7 +81,7 @@ gulp
 	
 L'ordre dans lequel les tâches sont chaînées compte, par exemple si on remplace le code de la tâche par défaut avec `gulp.task('default', ['world', 'hello']);`, nous verrons que la tâche `world` est appellée avant la tâche `hello`.
 
-Step 2 : Les instructions de base
+[Step 2 : Les instructions de base](id:Step2)
 ---
 
 Gulp propose quelques instructions de base pour la manipulation des fichiers et des dossiers.
@@ -229,7 +243,7 @@ Bien que cela puisse déjà s'avérer utile, ce n'est qu'un début.
 Comme nous allons le voir, Gulp peut faire bien plus que ça.
 
 
-Step 3 : Les plugins
+[Step 3 : Les plugins](id:Step3)
 ---
 
 Gulp dispose d'une [masse impressionante de plugins](http://gulpjs.com/plugins/) et la communauté des utilisateurs de Gulp continue d'en rajouter en permance.
@@ -447,7 +461,7 @@ var paths = {
 Avec ce tableau, la concaténation va s'opérer dans le bon ordre :
 ![screenshot2](http://puu.sh/iEYQF/96fa7a81b7.png =500x)
 
-Step 4 : Les watchers
+[Step 4 : Les watchers](id:Step4)
 ---
 
 Le `gulpfile` que nous avons réalisé permet de créer une version statique du client, mais il peut être fastidieux de devoir re-générer le répertoire 'dist' à chaque changement. Idéalement, il faudrait que le build se fasse à la volée. C'est précisément le rôle des `watchers`.
@@ -495,7 +509,7 @@ Maintenant essayons de modifier le fichier `client/index.html` en changeant le t
 Un simple rafraichissement de la page dans le navigateur (`F5` ou `CTRL+R`) devrait permettre de voir apparaître les changements.
 Sympa non ?
 
-Step 5 : Synchronisation avec le navigateur
+[Step 5 : Synchronisation avec le navigateur](id:Step5)
 ---
 
 NodeJS dispose d'un très bon module pour la synchronisation automatique client/serveur. Etant donné que Gulp est basé sur Node, il peut bénéficier des mêmes fonctionnalités.
@@ -538,7 +552,7 @@ gulp.task('serve', ['build'], function () {
 ```
 
 
-Step 6 : Intégration avec Browserify
+[Step 6 : Intégration avec Browserify](id:Step6)
 ---
 
 Le développement Javascript a grandement évolué depuis l'arrivé de NodeJS. Certaines des techniques de programmation spécifiques à Node se sont démocratisées et sont devenues des quasi-standards.
@@ -644,7 +658,7 @@ gulp.task('serve', ['build'], function () {
 ```
 
 
-Step 7 : Optimisation du build avec Watchify
+[Step 7 : Optimisation du build avec Watchify](id:Step7)
 ---
 
 
@@ -757,7 +771,7 @@ gulp.task('serve', ['build'], function () {
 
 ```
 
-Conclusion
+[Conclusion](id:conclusion)
 ---
 
 Avec ce tutoriel, nous avons pu effleurer l'ensemble des possibilités offertes par Gulp.
