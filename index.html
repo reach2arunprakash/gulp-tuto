@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Apprendre Gulp by Mnemotix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Apprendre Gulp</h1>
+      <h2 class="project-tagline">Créer un projet Gulp avec Browserify</h2>
+      <a href="https://github.com/Mnemotix/gulp-tuto" class="btn">View on GitHub</a>
+      <a href="https://github.com/Mnemotix/gulp-tuto/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Mnemotix/gulp-tuto/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="apprendre-gulp" class="anchor" href="#apprendre-gulp" aria-hidden="true"><span class="octicon octicon-link"></span></a>Apprendre Gulp</h1>
+
+<p>Gulp est un système de build comparable à Grunt qui se base sur le système de "stream" de NodeJS pour effectuer des tâches plus ou moins complexes.</p>
+
+<p>Tout au long du tutoriel, pour chaque étape, nous allons créer des versions du code sur le dépôt Github du projet, de manière à ce vous puissiez vous référer au code tel qu'il devrait être et suivre ses évolutions. En cas de problèmes vous pourrez toujours revenir en arrière juste en reprenant le code de l'étape précédente.</p>
+
+<p>Les tags sur le dépôt Github sont accessibles à cette adresse : <a href="https://github.com/Mnemotix/gulp-tuto/tags">https://github.com/Mnemotix/gulp-tuto/tags</a></p>
+
+<h2>
+<a id="sommaire-" class="anchor" href="#sommaire-" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sommaire :</h2>
+
+<ul>
+<li><a href="#step-0--installation">Step 0 : Installation</a></li>
+<li><a href="#step-1--les-t%C3%A2ches">Step 1 : Les tâches</a></li>
+<li><a href="#step-2--les-instructions-de-base">Step 2 : Les instructions de base</a></li>
+<li><a href="#step-3--les-plugins">Step 3 : Les plugins</a></li>
+<li><a href="#step-4--les-watchers">Step 4 : Les watchers</a></li>
+<li><a href="#step-5--synchronisation-avec-le-navigateur">Step 5 : Synchronisation avec le navigateur</a></li>
+<li><a href="#step-6--int%C3%A9gration-avec-browserify">Step 6 : Intégration avec Browserify</a></li>
+<li><a href="#step-7--optimisation-du-build-avec-watchify">Step 7 : Optimisation du build avec Watchify</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<hr>
+
+<h2>
+<a id="step-0--installation" class="anchor" href="#step-0--installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 0 : Installation</h2>
+
+<p>La première étape consiste à installer gulp en tant que module global npm et à l'enregristrer parmi les dépendances de développement de votre projet:</p>
+
+<div class="highlight highlight-sh"><pre>npm install -g gulp
+mkdir myapp
+<span class="pl-c1">cd</span> myapp
+npm init
+npm install --save-dev gulp</pre></div>
+
+<p>A partir de là Gulp est installé et prêt à exécuter toutes les tâches de build de votre projet. Il manque néanmoins une étape pour que Gulp soit complètement fonctionnel : le <code>gulpfile.js</code></p>
+
+<div class="highlight highlight-sh"><pre>touch gulpfile.js</pre></div>
+
+<h2>
+<a id="step-1--les-tâches" class="anchor" href="#step-1--les-t%C3%A2ches" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 1 : Les tâches</h2>
+
+<p>Le <code>gulpfile</code> est un fichier javascript qui va contenir toutes les tâches que gulp va pouvoir effectuer pour vous. La première tâche à configurer est la tâche par défaut. Ajoutez la commande suivante dans votre gulpfile : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> gulp <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp<span class="pl-pds">'</span></span>);
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>() {
+    <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">'</span>Hello world.<span class="pl-pds">'</span></span>);
+});</pre></div>
+
+<p>Sauvegardez et exécutez la commande <code>gulp</code> vous devriez avoir une sortie qui ressemble à ça : </p>
+
+<div class="highlight highlight-sh"><pre>[14:35:37] Using gulpfile <span class="pl-k">~</span>/Dev/tutorials/jdev2015/gulp-tuto/gulpfile.js
+[14:35:37] Starting <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>...
+Hello world.
+[14:35:37] Finished <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span> after 106 μs</pre></div>
+
+<p>Les tâches Gulp peuvent également être décomposées et chaînées. Modifiez le fichier <code>gulpfile.js</code> de la manière suivante :</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> gulp <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp<span class="pl-pds">'</span></span>);
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello, <span class="pl-pds">"</span></span>);
+});
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>world<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>world!<span class="pl-pds">"</span></span>);
+});
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>world<span class="pl-pds">'</span></span>]);</pre></div>
+
+<p>Nous avons défini deux tâches distinctes et la tâche par défaut qui appelle les deux autres. Vous pouvez essayer les commandes suivantes :</p>
+
+<div class="highlight highlight-sh"><pre>gulp hello
+gulp world
+gulp</pre></div>
+
+<p>L'ordre dans lequel les tâches sont chaînées compte, par exemple si on remplace le code de la tâche par défaut avec <code>gulp.task('default', ['world', 'hello']);</code>, nous verrons que la tâche <code>world</code> est appellée avant la tâche <code>hello</code>.</p>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step1">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="step-2--les-instructions-de-base" class="anchor" href="#step-2--les-instructions-de-base" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 2 : Les instructions de base</h2>
+
+<p>Gulp propose quelques instructions de base pour la manipulation des fichiers et des dossiers.</p>
+
+<ul>
+<li>
+<code>gulp.src</code> : sélectionne un ensemble de fichiers sources</li>
+<li>
+<code>pipe</code> : opérateur qui permet de chainer les opérations</li>
+<li>
+<code>gulp.dest</code> : copie le résultat de la chaine de traitement vers un répertoire de destination.</li>
+</ul>
+
+<p>Modifions à présent la structure du répertoire de manière à avoir le squelette d'une application qui ressemblerait à cela : </p>
+
+<pre><code>.
+├── README.md
+├── client
+│   ├── app
+│   │   ├── app.js
+│   │   ├── collections
+│   │   │   └── collections.js
+│   │   ├── models
+│   │   │   └── models.js
+│   │   └── views
+│   │       └── views.js
+│   ├── assets
+│   │   ├── favicon.ico
+│   │   ├── images
+│   │   │   └── shlurp.png
+│   │   └── styles
+│   │       └── style.css
+│   └── index.html
+├── gulpfile.js
+├── node_modules
+└── package.json
+</code></pre>
+
+<p>Editez le fichier <code>index.html</code> </p>
+
+<div class="highlight highlight-html"><pre>&lt;!DOCTYPE html&gt;
+&lt;<span class="pl-ent">html</span>&gt;
+&lt;<span class="pl-ent">head</span> <span class="pl-e">lang</span>=<span class="pl-s"><span class="pl-pds">"</span>en<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">meta</span> <span class="pl-e">charset</span>=<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">title</span>&gt;My App&lt;/<span class="pl-ent">title</span>&gt;
+    &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>shortcut icon<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>img/favicon.ico<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/css<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>css/style.css<span class="pl-pds">"</span></span>&gt;
+&lt;/<span class="pl-ent">head</span>&gt;
+&lt;<span class="pl-ent">body</span>&gt;
+    &lt;<span class="pl-ent">h1</span>&gt;Gulp rocks!&lt;/<span class="pl-ent">h1</span>&gt;
+    &lt;<span class="pl-ent">p</span>&gt;&lt;<span class="pl-ent">img</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>img/shlurp.png<span class="pl-pds">"</span></span>/&gt;&lt;/<span class="pl-ent">p</span>&gt;
+
+<span class="pl-c">&lt;!-- Scripts --&gt;</span>
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>js/models/models.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt; &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>js/collections/collections.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>js/views/views.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>js/app.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+<span class="pl-c">&lt;!-- /Scripts --&gt;</span>
+
+&lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<p>Editez le fichier <code>app.js</code></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>Application has started...<span class="pl-pds">"</span></span>);</pre></div>
+
+<p>Editez le fichier <code>models.js</code></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>Models have been loaded.<span class="pl-pds">"</span></span>);</pre></div>
+
+<p>Editez le fichier <code>collections.js</code></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>Collections have been loaded.<span class="pl-pds">"</span></span>);</pre></div>
+
+<p>Editez le fichier <code>views.js</code></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>Views have been loaded.<span class="pl-pds">"</span></span>);</pre></div>
+
+<p>A présent, pour illustrer le fonctionnement des instructions de base de Gulp, nous allons éditer le <code>gulpfile</code> de la manière suivante :</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> gulp <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp<span class="pl-pds">'</span></span>);
+
+<span class="pl-c">// Scripts</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(<span class="pl-s"><span class="pl-pds">'</span>./client/app/**/*.js<span class="pl-pds">'</span></span>)
+        .pipe(gulp.dest(<span class="pl-s"><span class="pl-pds">'</span>./dist/js<span class="pl-pds">'</span></span>));
+});
+
+<span class="pl-c">// Stylesheets</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(<span class="pl-s"><span class="pl-pds">'</span>./client/assets/**/*.css<span class="pl-pds">'</span></span>)
+        .pipe(gulp.dest(<span class="pl-s"><span class="pl-pds">'</span>./dist/css<span class="pl-pds">'</span></span>));
+});
+
+<span class="pl-c">// Images</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src([<span class="pl-s"><span class="pl-pds">'</span>./client/assets/**/*.png<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>./client/assets/**/*.ico<span class="pl-pds">'</span></span>])
+        .pipe(gulp.dest(<span class="pl-s"><span class="pl-pds">'</span>./dist/img<span class="pl-pds">'</span></span>));
+});
+
+<span class="pl-c">// HTML</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(<span class="pl-s"><span class="pl-pds">'</span>./client/**/*.html<span class="pl-pds">'</span></span>)
+        .pipe(gulp.dest(<span class="pl-s"><span class="pl-pds">'</span>./dist<span class="pl-pds">'</span></span>));
+});
+
+<span class="pl-c">// Default</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>]);</pre></div>
+
+<p>Nous avons donc défini trois tâches de base qui vont respectivement sélectionner les fichiers de l'application par leur extension et les copier dans le répertoire "dist". La commande par défaut va exécuter toutes ces tâches les unes après les autres.</p>
+
+<div class="highlight highlight-sh"><pre>$ gulp
+[15:37:18] Using gulpfile <span class="pl-k">~</span>/Dev/tutorials/gulp/gulp-tuto/gulpfile.js
+[15:37:18] Starting <span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>...
+[15:37:18] Finished <span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span> after 5.94 ms
+[15:37:18] Starting <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>...
+[15:37:18] Finished <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span> after 1.68 ms
+[15:37:18] Starting <span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>...
+[15:37:18] Finished <span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span> after 749 μs
+[15:37:18] Starting <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>...
+[15:37:18] Finished <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span> after 2.49 μs</pre></div>
+
+<p>Un petit coup d'oeil sur le dossier 'dist' qui a été créé : </p>
+
+<div class="highlight highlight-sh"><pre>$ tree ./dist
+./dist
+├── css
+│   └── style.css
+├── img
+│   ├── favicon.ico
+│   └── shlurp.png
+├── index.html
+└── js
+    ├── app.js
+    ├── collections
+    │   └── collections.js
+    ├── models
+    │   └── models.js
+    └── views
+        └── views.js</pre></div>
+
+<p>Il ne reste plus qu'à afficher tout ça dans le navigateur :</p>
+
+<div class="highlight highlight-sh"><pre>$ open ./dist/index.html</pre></div>
+
+<p>Bien que cela puisse déjà s'avérer utile, ce n'est qu'un début.<br>
+Comme nous allons le voir, Gulp peut faire bien plus que ça.</p>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step2">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="step-3--les-plugins" class="anchor" href="#step-3--les-plugins" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 3 : Les plugins</h2>
+
+<p>Gulp dispose d'une <a href="http://gulpjs.com/plugins/">masse impressionante de plugins</a> et la communauté des utilisateurs de Gulp continue d'en rajouter en permance.</p>
+
+<p>Les plugins permettent d'appliquer des traitements très variés entre le moment où les fichiers sont sélectionnés par l'instruction <code>gulp.src</code>et le moment où ils sont copiés dans avec <code>gulp.dest</code>. Ces plugins sont appliqués grâce à l'instruciton <code>pipe</code>.</p>
+
+<p>L'instruction type dans Gulp est donc de la forme suivante :</p>
+
+<div class="highlight highlight-js"><pre>gulp.src(<span class="pl-k">&lt;</span>selecteurs<span class="pl-k">&gt;</span>, <span class="pl-k">&lt;</span>options<span class="pl-k">&gt;</span>)
+    .pipe(plugin1(params))
+    .pipe(plugin2(params))
+    ...
+    .pipe(pluginN(params))
+    .pipe(gulp.dest(<span class="pl-k">&lt;</span>destination<span class="pl-k">&gt;</span>));</pre></div>
+
+<p>Il existe des plugins pour à peu près tout. Ca peut être pour minifier les scripts ou les feuilles de styles, pour valider la syntaxe du javascript, pour compiler les fichiers coffeescript, less, sass, dart, pour transformer les templates en script JS, pour compresser les images, etc... </p>
+
+<p>La liste est longue et l'objectif de ce tutoriel n'est pas de les couvrir tous. Nous allons donc nous concentrer sur les plugins les plus utilisés/utiles.</p>
+
+<div class="highlight highlight-sh"><pre>npm install --save-dev del gulp-less gulp-jshint gulp-concat gulp-uglify</pre></div>
+
+<p>Rapidement :</p>
+
+<ul>
+<li>
+<code>gulp-less</code> : permet de compiler les fichiers less (il existe un équivalent pour sass)</li>
+<li>
+<code>gulp-jshint</code> : permet de valider la qualité du code javascript.</li>
+<li>
+<code>gulp-concat</code> : permet de concaténer plusieurs fichiers en un seul</li>
+<li>
+<code>gulp-uglify</code> : salit le code JS pour empêcher qu'il soit lisible une fois déployé en prod.</li>
+<li>
+<code>del</code> : permet de supprimer des fichiers ou des dossiers</li>
+</ul>
+
+<p>Ces dépendances sont sauvées en tant que dépendances de développement.
+Une fois ces dépendances installées, il faut les importer dans le <code>gulpfile</code> : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> gulp <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> jshint <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-jshint<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> less <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-less<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> concat <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-concat<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> uglify <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-uglify<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> rename <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-rename<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> del <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>del<span class="pl-pds">'</span></span>);</pre></div>
+
+<p>Pour plus de lisibilité et dans l'esprit du "don't repeat yourself", nous allons mutualiser les chemins de l'application dans un objet JS : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> paths <span class="pl-k">=</span> {
+    dist    <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./dist<span class="pl-pds">'</span></span>,
+    scripts <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./client/app/**/*.js<span class="pl-pds">'</span></span>,
+    styles  <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./client/assets/styles/**/*.less<span class="pl-pds">'</span></span>,
+    html    <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./client/**/*.html<span class="pl-pds">'</span></span>,
+    images  <span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>./client/assets/favicon.ico<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>./client/assets/images/**/*.*<span class="pl-pds">'</span></span>]
+};</pre></div>
+
+<p>Tout d'abord, nous allons rajouter les tâches de "cleaning" qui serviront à supprimer du dossier 'dist' certains fichiers avant l'exécution des tâches : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c"> * Cleans the dist directory</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>clean:scripts<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">cb</span>) {
+    del(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/js<span class="pl-pds">'</span></span>, cb);
+});
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>clean:styles<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">cb</span>) {
+    del(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/css<span class="pl-pds">'</span></span>, cb);
+});
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>clean:images<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">cb</span>) {
+    del(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/images<span class="pl-pds">'</span></span>, cb);
+});
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>clean:html<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">cb</span>) {
+    del(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/**/*.html<span class="pl-pds">'</span></span>, cb);
+});</pre></div>
+
+<p>Nous allons également renommer le fichier <code>style.css</code> en <code>style.less</code> et éditer son contenu de manière à avoir :</p>
+
+<div class="highlight highlight-less"><pre><span class="pl-smi">@bg-color</span> : pink;
+<span class="pl-smi">@fg-color</span> : <span class="pl-c1">white</span>;
+<span class="pl-k">body</span>{
+    <span class="pl-c1">background-color</span>: <span class="pl-smi">@bg-color</span>;
+    <span class="pl-c1">color</span>:<span class="pl-smi">@fg-color</span>;
+}</pre></div>
+
+<p>Ensuite nous allons changer la tâche 'styles' de manière à récupérer les fichiers .less et pas les .css et à les transformer à la volée.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c"> * Compiles less files into css</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>clean:styles<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(paths.styles)
+        .pipe(less())
+        .pipe(gulp.dest(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/css<span class="pl-pds">'</span></span>));
+});</pre></div>
+
+<p>De la même manière nous allons pouvoir traiter les fichiers javascript, les valider avec JSLint, les concaténer dans un seul fichier et les minifier pour la prod : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c"> * Checks the validity of JS code</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(paths.<span class="pl-c1">scripts</span>)
+        .pipe(jshint())
+        .pipe(jshint.reporter(<span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>));
+});
+
+<span class="pl-c">/*</span>
+<span class="pl-c"> * Concatenates &amp; uglifies JS scripts into a single file</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>clean:scripts<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(paths.<span class="pl-c1">scripts</span>)
+        .pipe(uglify())
+        .pipe(<span class="pl-c1">concat</span>(<span class="pl-s"><span class="pl-pds">'</span>scripts.min.js<span class="pl-pds">'</span></span>))
+        .pipe(gulp.dest(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/js<span class="pl-pds">'</span></span>));
+});</pre></div>
+
+<p>On met également à jour les autres tâches : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c"> * Copies html files to dist directory</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>clean:html<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(paths.html)
+        .pipe(gulp.dest(paths.dist));
+});
+
+<span class="pl-c">/*</span>
+<span class="pl-c"> * Copies images files to dist directory</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>clean:images<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    <span class="pl-k">return</span> gulp.src(paths.<span class="pl-c1">images</span>)
+        .pipe(gulp.dest(paths.dist <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">'</span>/img<span class="pl-pds">'</span></span>));
+});</pre></div>
+
+<p>Pour plus de lisibilité, nous allons créer une tâche 'build' qui construira l'intégralité du répertoire 'dist' : </p>
+
+<div class="highlight highlight-js"><pre>gulp.task(<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>, [
+    <span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>
+]);
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>]);</pre></div>
+
+<p>On modifie le fichier <code>./client/index.html</code>:</p>
+
+<div class="highlight highlight-html"><pre>&lt;!DOCTYPE html&gt;
+&lt;<span class="pl-ent">html</span>&gt;
+&lt;<span class="pl-ent">head</span> <span class="pl-e">lang</span>=<span class="pl-s"><span class="pl-pds">"</span>en<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">meta</span> <span class="pl-e">charset</span>=<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">title</span>&gt;My App&lt;/<span class="pl-ent">title</span>&gt;
+    &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>shortcut icon<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>img/favicon.ico<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/css<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>css/style.css<span class="pl-pds">"</span></span>&gt;
+&lt;/<span class="pl-ent">head</span>&gt;
+&lt;<span class="pl-ent">body</span>&gt;
+
+    &lt;<span class="pl-ent">h1</span>&gt;Gulp rocks!&lt;/<span class="pl-ent">h1</span>&gt;
+    &lt;<span class="pl-ent">p</span>&gt;&lt;<span class="pl-ent">img</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>img/shlurp.png<span class="pl-pds">"</span></span>/&gt;&lt;/<span class="pl-ent">p</span>&gt;
+
+<span class="pl-c">&lt;!-- Scripts --&gt;</span>
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>js/scripts.min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+<span class="pl-c">&lt;!-- /Scripts --&gt;</span>
+
+&lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<p>Une fois les modifications faites, nous pouvons vérifier que le tout fonctionne correctement :</p>
+
+<div class="highlight highlight-sh"><pre>$ gulp
+$ open ./dist/index.html</pre></div>
+
+<p>Vous devriez obtenir un résultat qui ressemble à ça : 
+<img src="http://puu.sh/iEY3E/54992f328d.png%20=500x" alt="screenshot"></p>
+
+<p>Le problème ici vient du fait que si notre client était une véritable Single Page Application alors le script <code>app.js</code>devrait être chargé en dernier, or là nous voyons qu'il est appelé en premier. De même, dans le cas de Backbone, il est important que les modèles soient chargés avant les collections sous peine d'avoir une exception JS au chargement de la page. Il faut donc dire à Gulp l'ordre dans lequel les fichiers doivent être chargés. Pour cela nous allons utiliser un tableau pour déclarer nos fichiers au lieu d'une regex : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> paths <span class="pl-k">=</span> {
+    dist    <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./dist<span class="pl-pds">'</span></span>,
+    scripts <span class="pl-k">:</span> [
+        <span class="pl-s"><span class="pl-pds">'</span>./client/app/models/models.js<span class="pl-pds">'</span></span>,
+        <span class="pl-s"><span class="pl-pds">'</span>./client/app/collections/collections.js<span class="pl-pds">'</span></span>,
+        <span class="pl-s"><span class="pl-pds">'</span>./client/app/views/views.js<span class="pl-pds">'</span></span>,
+        <span class="pl-s"><span class="pl-pds">'</span>./client/app/app.js<span class="pl-pds">'</span></span>
+    ],
+    styles  <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./client/assets/styles/**/*.less<span class="pl-pds">'</span></span>,
+    html    <span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>./client/**/*.html<span class="pl-pds">'</span></span>,
+    images  <span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>./client/assets/favicon.ico<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>./client/assets/images/**/*.*<span class="pl-pds">'</span></span>]
+};</pre></div>
+
+<p>Avec ce tableau, la concaténation va s'opérer dans le bon ordre :
+<img src="http://puu.sh/iEYQF/96fa7a81b7.png%20=500x" alt="screenshot2"></p>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step3">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="step-4--les-watchers" class="anchor" href="#step-4--les-watchers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 4 : Les watchers</h2>
+
+<p>Le <code>gulpfile</code> que nous avons réalisé permet de créer une version statique du client, mais il peut être fastidieux de devoir re-générer le répertoire 'dist' à chaque changement. Idéalement, il faudrait que le build se fasse à la volée. C'est précisément le rôle des <code>watchers</code>.</p>
+
+<p>Les <code>watchers</code> vont détecter les moindres changements sur un ensemble de fichiers et vont déclencher, le cas échéant, les tâches qui leur sont associées.</p>
+
+<p>Reprenons notre <code>gulpfile</code> et ajoutons lui donc une tâche <code>watch</code> :</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c">* Watches any change in source code and updates</span>
+<span class="pl-c">* the dist directory in real time</span>
+<span class="pl-c">*/</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>watch<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> () {
+   gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">scripts</span>, [<span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>]);
+   gulp.<span class="pl-c1">watch</span>(paths.styles, [<span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>]);
+   gulp.<span class="pl-c1">watch</span>(paths.html, [<span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>]);
+   gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">images</span>, [<span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>]);
+});</pre></div>
+
+<p>Il faut ensuite mettre à jour la tâche par défaut :</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c">* Default task, build everything and watches for changes</span>
+<span class="pl-c">*/</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>watch<span class="pl-pds">'</span></span>]);</pre></div>
+
+<p>L'exécution de la tâche va donner lieu à un processus de type 'loop' qu'il sera possible d'arrêter à tout moment avec le raccourci <code>CTRL+C</code>.</p>
+
+<div class="highlight highlight-sh"><pre>$ gulp build
+$ open ./dist/index.html
+$ gulp watch</pre></div>
+
+<p>Maintenant essayons de modifier le fichier <code>client/index.html</code> en changeant le texte de la balise <code>h1</code>par exemple :</p>
+
+<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">h1</span>&gt;Gulp is watching you!&lt;/<span class="pl-ent">h1</span>&gt;</pre></div>
+
+<p>Un simple rafraichissement de la page dans le navigateur (<code>F5</code> ou <code>CTRL+R</code>) devrait permettre de voir apparaître les changements.
+Sympa non ?</p>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step4">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="step-5--synchronisation-avec-le-navigateur" class="anchor" href="#step-5--synchronisation-avec-le-navigateur" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 5 : Synchronisation avec le navigateur</h2>
+
+<p>NodeJS dispose d'un très bon module pour la synchronisation automatique client/serveur. Etant donné que Gulp est basé sur Node, il peut bénéficier des mêmes fonctionnalités.
+Le but avoué étant de ne même plus avoir à appuyer sur <code>F5</code>pour rafraichir la page.</p>
+
+<p>Le module en question est <a href="http://www.browsersync.io/">BrowserSync</a>. Il ne s'agit pas d'un plugin Gulp à part entière, mais il s'intègre très bien en tant que tel. </p>
+
+<p>Installation</p>
+
+<div class="highlight highlight-sh"><pre>npm install --save-dev browser-sync</pre></div>
+
+<p>Importez le dans le Gulpfile</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> browserSync <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>browser-sync<span class="pl-pds">'</span></span>).create();</pre></div>
+
+<p>Créez une tâche 'serve' à la place de 'watch'</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c"> * Synchronizes the browser with the 'dist' directory</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>serve<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    browserSync.init({
+        notify<span class="pl-k">:</span> <span class="pl-c1">false</span>,
+        port<span class="pl-k">:</span> <span class="pl-c1">9000</span>,
+        server<span class="pl-k">:</span> {
+            baseDir<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>dist<span class="pl-pds">'</span></span>]
+        }
+    });
+
+    gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">scripts</span>, [<span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+    gulp.<span class="pl-c1">watch</span>(paths.styles, [<span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+    gulp.<span class="pl-c1">watch</span>(paths.html, [<span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+    gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">images</span>, [<span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+});</pre></div>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step5">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="step-6--intégration-avec-browserify" class="anchor" href="#step-6--int%C3%A9gration-avec-browserify" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 6 : Intégration avec Browserify</h2>
+
+<p>Le développement Javascript a grandement évolué depuis l'arrivé de NodeJS. Certaines des techniques de programmation spécifiques à Node se sont démocratisées et sont devenues des quasi-standards.</p>
+
+<p>L'une des technologies emblématique de Node sont les <a href="http://wiki.commonjs.org/wiki/Modules/1.1">modules CommonJS</a> qui, couplés à NPM, permettent de modulariser très simplement le développement d'une application.</p>
+
+<p><a href="http://browserify.org/">Browserify</a> s'appuie sur NPM pour transformer n'importe quelle application développées avec les modules CommonJS en un script unique qui rassemble tout au moment de passer en production. L'avantage est de ne plus avoir à gérer l'ordre dans lequel les scripts doivent être insérés car le système de résolution des dépendances de NPM garantit que les modules seront chargés dans l'ordre.</p>
+
+<p>Le couplage de Gulp avec Browserify est très puissant car il permet de développer une application complexe et modulaire et de simplement dire à Browserify de rassembler le tout dans un seul script (<code>bundle.js</code>) qui sera au final intégré dans le fichier index.html.</p>
+
+<p>La gros avantage par rapport au plugin de concaténation est qu'il n'est pas nécessaire de passer un tableau avec tous les scripts dans l'ordre. De plus, toutes les librairies qui sont utilisables avec NPM (notamment Jquery, Backbone) sont intégrées dans le bundle.</p>
+
+<p>Commençons par installer Browserify et ses dépendances : </p>
+
+<div class="highlight highlight-sh"><pre>npm install --save-dev browserify vinyl-source-stream</pre></div>
+
+<p>Il faut ensuite mettre à jour le <code>Gulpfile</code>:</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">// Browserify</span>
+<span class="pl-k">var</span> browserify <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>browserify<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> source <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>vinyl-source-stream<span class="pl-pds">'</span></span>);</pre></div>
+
+<p>Et ajouter une tâche correspondante :</p>
+
+<div class="highlight highlight-js"><pre>gulp.task(<span class="pl-s"><span class="pl-pds">'</span>browserify<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>() {
+    <span class="pl-k">return</span> browserify(<span class="pl-s"><span class="pl-pds">'</span>./client/app/app.js<span class="pl-pds">'</span></span>).bundle()
+        .pipe(source(<span class="pl-s"><span class="pl-pds">'</span>bundle.js<span class="pl-pds">'</span></span>))
+        .pipe(gulp.dest(<span class="pl-s"><span class="pl-pds">'</span>./dist<span class="pl-pds">'</span></span>));
+});</pre></div>
+
+<p>Cette tâche va prendre le script "racine" de l'application et résoudre toutes ses dépendances, les ajouter dans un fichier <code>bundle.js</code>et le placer dans le répertoire "dist". Quelle différence avec la tâche "scripts" des étapes précédentes ? Un petit exemple devrait éclairer tout ça.</p>
+
+<p>Commençons par installer la librairie Jquery : </p>
+
+<div class="highlight highlight-sh"><pre>npm install --save jquery</pre></div>
+
+<p>Vous remarquerez que cette fois çi, la librairie n'est pas installée en tant que dépendance de développement grâce à l'option <code>--save</code>au lieu de <code>--save-dev</code>.</p>
+
+<p>Editez le fichier <code>./client/app/app.js</code> :</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> $ <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>jquery<span class="pl-pds">'</span></span>);
+$(<span class="pl-s"><span class="pl-pds">'</span>img<span class="pl-pds">'</span></span>).fadeOut(); <span class="pl-c">// makes images disappear</span>
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">"</span>Application has started...<span class="pl-pds">"</span></span>);</pre></div>
+
+<p>Ce script très simple importe la librairie Jquery pour ensuite créer un effet de fade out sur toutes les images de la page.</p>
+
+<p>Reste à mettre à jour le fichier <code>index.html</code>pour lui dire d'importer le bon script : </p>
+
+<div class="highlight highlight-html"><pre>&lt;!DOCTYPE html&gt;
+&lt;<span class="pl-ent">html</span>&gt;
+&lt;<span class="pl-ent">head</span> <span class="pl-e">lang</span>=<span class="pl-s"><span class="pl-pds">"</span>en<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">meta</span> <span class="pl-e">charset</span>=<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">title</span>&gt;My App&lt;/<span class="pl-ent">title</span>&gt;
+    &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>shortcut icon<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>img/favicon.ico<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/css<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>css/style.css<span class="pl-pds">"</span></span>&gt;
+&lt;/<span class="pl-ent">head</span>&gt;
+&lt;<span class="pl-ent">body</span>&gt;
+    &lt;<span class="pl-ent">h1</span>&gt;Gulp is serving you!&lt;/<span class="pl-ent">h1</span>&gt;
+    &lt;<span class="pl-ent">p</span>&gt;&lt;<span class="pl-ent">img</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>img/shlurp.png<span class="pl-pds">"</span></span>/&gt;&lt;/<span class="pl-ent">p</span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>bundle.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+&lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<p>Exécuter </p>
+
+<div class="highlight highlight-sh"><pre>gulp browerify
+gulp serve</pre></div>
+
+<p>Et votre image devrait disparaitre toute seule.
+A partir de maintenant, la tâche <code>browserify</code>peut remplacer la tâche <code>scripts</code>des étapes précédentes. </p>
+
+<div class="highlight highlight-js"><pre>gulp.task(<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>, [
+    <span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>browserify<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>
+]);
+
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>serve<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    browserSync.init({
+    [...]
+    });
+
+    gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">scripts</span>, [<span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>browserify<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+    [...]
+});</pre></div>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step6">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="step-7--optimisation-du-build-avec-watchify" class="anchor" href="#step-7--optimisation-du-build-avec-watchify" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 7 : Optimisation du build avec Watchify</h2>
+
+<p>Au fur et à mesure qu'un projet Browserify évolue, la construction du bundle devient de plus en plus longue et peut prendre jusqu'à 30 secondes et plus. Un tel délai de compilation va devenir très vite très pénible pour le développeur.</p>
+
+<p>C'est pourquoi <a href="http://github.com/substack">substack</a> a écrit <a href="http://github.com/substack/watchify">Watchify</a>, un compilateur Browserify persistant qui ajoute un watcher sur les fichiers et ne reconstruit <strong><em>que le strict nécéssaire</em></strong>. De cette manière un build qui pourrait prendre plusieurs dizaines de secondes, ne prend que quelques millisecondes, ce qui représente un énorme gain de productivité.</p>
+
+<p>Watchify, comme Browserify, ne propose pas de plugin Gulp et il n'en a pas besoin. Nous pouvons utiliser <a href="http://github.com/hughsk/vinyl-source-stream">vinyl-source-stream</a> pour intégrer le stream Watchify dans la pipeline Gulp.</p>
+
+<p>Commençons par installer les dépendances nécessaires :</p>
+
+<div class="highlight highlight-sh"><pre>npm install --save-dev gulp-util vinyl-buffer watchify gulp-sourcemaps lodash.assign</pre></div>
+
+<p>Ensuite dans le Gulpfile, il faut compléter les imports : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">// gulfile.js</span>
+
+<span class="pl-k">var</span> gulp <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> jshint <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-jshint<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> less <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-less<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> del <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>del<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> gutil <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-util<span class="pl-pds">'</span></span>);               <span class="pl-c">// new</span>
+
+<span class="pl-k">var</span> browserSync <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>browser-sync<span class="pl-pds">'</span></span>).create(); 
+
+<span class="pl-c">// Browserify + Watchify</span>
+<span class="pl-k">var</span> browserify <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>browserify<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> watchify <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>watchify<span class="pl-pds">'</span></span>);             <span class="pl-c">// new</span>
+<span class="pl-k">var</span> buffer <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>vinyl-buffer<span class="pl-pds">'</span></span>);           <span class="pl-c">// new</span>
+<span class="pl-k">var</span> source <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>vinyl-source-stream<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> sourcemaps <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>gulp-sourcemaps<span class="pl-pds">'</span></span>);    <span class="pl-c">// new</span>
+<span class="pl-k">var</span> assign <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>lodash.assign<span class="pl-pds">'</span></span>);          <span class="pl-c">// new</span>
+</pre></div>
+
+<p>On peut supprimer la tâche <code>browserify</code> précédente et la remplacer par le bloc suivant :</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">// Options browserify</span>
+<span class="pl-k">var</span> customOpts <span class="pl-k">=</span> {
+    entries<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>./client/app/app.js<span class="pl-pds">'</span></span>],
+    debug<span class="pl-k">:</span> <span class="pl-c1">true</span>
+};
+
+<span class="pl-c">// Utilisation du module lowdash.assign pour fusionner</span>
+<span class="pl-c">// les options browserify et watchify dans un même objet</span>
+<span class="pl-k">var</span> opts <span class="pl-k">=</span> assign({}, watchify.args, customOpts);
+
+<span class="pl-c">// Initialisation de Watchify</span>
+<span class="pl-k">var</span> bundler <span class="pl-k">=</span> watchify(browserify(opts));
+
+<span class="pl-c">// Il est possible d'ajouter des transformations ici, par exemple :</span>
+<span class="pl-c">// bundler.transform(coffeeify);</span>
+
+bundler.on(<span class="pl-s"><span class="pl-pds">'</span>update<span class="pl-pds">'</span></span>, bundle); <span class="pl-c">// listener sur l'évènement 'update' pour mettre à jour pour le bundle</span>
+bundler.on(<span class="pl-s"><span class="pl-pds">'</span>log<span class="pl-pds">'</span></span>, gutil<span class="pl-c1">.log</span>); <span class="pl-c">// log les sorties du bundler sur le terminal</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>, bundle); <span class="pl-c">// ajout de la tâche `gulp scripts` pour assembler le bundle</span>
+
+<span class="pl-k">function</span> <span class="pl-en">bundle</span>() {
+    <span class="pl-k">return</span> bundler.bundle()
+        <span class="pl-c">// log les errors quand elles surviennent</span>
+        .on(<span class="pl-s"><span class="pl-pds">'</span>error<span class="pl-pds">'</span></span>, gutil<span class="pl-c1">.log</span>.bind(gutil, <span class="pl-s"><span class="pl-pds">'</span>Browserify Error<span class="pl-pds">'</span></span>))
+        .pipe(source(<span class="pl-s"><span class="pl-pds">'</span>bundle.js<span class="pl-pds">'</span></span>))
+        <span class="pl-c">// optionnel, permet de bufferiser le contenu des fichiers pour améliorer les performances du build</span>
+        .pipe(buffer())
+        <span class="pl-c">// optionnel, permet d'ajouter les sourcemaps pour le debug</span>
+        .pipe(sourcemaps.init({loadMaps<span class="pl-k">:</span> <span class="pl-c1">true</span>}))
+        <span class="pl-c">// Ecrit les fichiers .map</span>
+        .pipe(sourcemaps.<span class="pl-c1">write</span>(<span class="pl-s"><span class="pl-pds">'</span>./<span class="pl-pds">'</span></span>))
+        <span class="pl-c">// Copie le tout dans le répertoire final</span>
+        .pipe(gulp.dest(paths.dist))
+        <span class="pl-c">// stream le résultat à BrowserSync pour qu'il recharge automatiquement la page</span>
+        .pipe(browserSync.stream());
+}
+</pre></div>
+
+<p>Ensuite, on met à jour les tâches <code>build</code> et <code>serve</code> : </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">/*</span>
+<span class="pl-c"> * Macro task to re-build the whole dist directory</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>, [
+    <span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>, 
+    <span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>
+]);
+
+<span class="pl-c">/*</span>
+<span class="pl-c"> * Synchronizes the browser with the 'dist' directory</span>
+<span class="pl-c"> */</span>
+gulp.task(<span class="pl-s"><span class="pl-pds">'</span>serve<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>build<span class="pl-pds">'</span></span>], <span class="pl-k">function</span> () {
+    browserSync.init({
+        notify<span class="pl-k">:</span> <span class="pl-c1">false</span>,
+        port<span class="pl-k">:</span> <span class="pl-c1">9000</span>,
+        server<span class="pl-k">:</span> {
+            baseDir<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>dist<span class="pl-pds">'</span></span>]
+        }
+    });
+    gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">scripts</span>, [<span class="pl-s"><span class="pl-pds">'</span>lint<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>scripts<span class="pl-pds">'</span></span>]);
+    gulp.<span class="pl-c1">watch</span>(paths.styles, [<span class="pl-s"><span class="pl-pds">'</span>styles<span class="pl-pds">'</span></span>]);
+    gulp.<span class="pl-c1">watch</span>(paths.html, [<span class="pl-s"><span class="pl-pds">'</span>html<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+    gulp.<span class="pl-c1">watch</span>(paths.<span class="pl-c1">images</span>, [<span class="pl-s"><span class="pl-pds">'</span>images<span class="pl-pds">'</span></span>]).on(<span class="pl-s"><span class="pl-pds">"</span>change<span class="pl-pds">"</span></span>, browserSync.reload);
+});
+</pre></div>
+
+<p><a href="https://github.com/Mnemotix/gulp-tuto/tree/Step7">Code source complet de cette étape</a></p>
+
+<h2>
+<a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conclusion</h2>
+
+<p>Avec ce tutoriel, nous avons pu effleurer l'ensemble des possibilités offertes par Gulp.
+Le projet final de ce tutoriel nous donne des bases solides pour la construction d'applications fullstack JS et nous servira de point de départ dans les prochains chapitres de notre formation.</p>
+
+<p>Vous pouvez retrouver le code source complet du projet, dans son état final, <a href="https://github.com/Mnemotix/gulp-tuto">à cette adresse</a> ou bien en utilisant la ligne de commande GIT : </p>
+
+<pre><code>git clone https://github.com/Mnemotix/gulp-tuto.git myproject
+</code></pre>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Mnemotix/gulp-tuto">Apprendre Gulp</a> is maintained by <a href="https://github.com/Mnemotix">Mnemotix</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-64642317-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
+
